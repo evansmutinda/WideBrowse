@@ -29,6 +29,9 @@ function requireSession(): void {
 
 async function main() {
   await bridge.start();
+  console.error(
+    `WideBrowse MCP ready (bridge=${bridge.bridgeMode}, port=${port}). Extension popup should show Bridge=connected.`
+  );
 
   const server = new McpServer({
     name: "widebrowse",
@@ -353,10 +356,40 @@ async function main() {
     "Check whether the WideBrowse extension is connected and whether a control session is active.",
     {},
     async () => {
+      const health = bridge.health;
+      let extensionConnected = health.extensionConnected;
+      if (health.mode === "peer" && health.hubLink) {
+        try {
+          await bridge.call("ping", {}, 3000);
+          extensionConnected = true;
+        } catch (err) {
+          extensionConnected = false;
+          const msg = String((err as Error)?.message || err);
+          if (!health.issue) {
+            return text({
+              ...health,
+              extensionConnected: false,
+              session: bridge.sessionInfo,
+              bridgePort: port,
+              bridgeMode: health.mode,
+              hint: msg.includes("extension")
+                ? "Hub is up but the browser extension is offline. Open the WideBrowse popup and click Reconnect bridge."
+                : msg,
+            });
+          }
+        }
+      } else if (health.mode === "hub") {
+        extensionConnected = bridge.connected;
+      }
       return text({
-        extensionConnected: bridge.connected,
+        extensionConnected,
         session: bridge.sessionInfo,
         bridgePort: port,
+        bridgeMode: health.mode,
+        hubLink: health.hubLink,
+        recovering: health.recovering,
+        issue: health.issue,
+        hint: health.hint,
       });
     }
   );

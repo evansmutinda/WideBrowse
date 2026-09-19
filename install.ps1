@@ -42,8 +42,10 @@ if (-not (Test-Path $ExtensionDir)) { throw "Missing extension folder at $Extens
 Write-Step "Checking Node.js"
 Require-Command "node"
 Require-Command "npm"
+$nodeCmd = Get-Command node -ErrorAction Stop
+$NodeExe = $nodeCmd.Source
 $nodeVersion = (node -v)
-Write-Host "Found $nodeVersion"
+Write-Host "Found $nodeVersion ($NodeExe)"
 
 Write-Step "Installing MCP dependencies"
 Push-Location $ServerDir
@@ -61,8 +63,12 @@ if (-not (Test-Path $EntryJs)) {
 }
 Write-Host "Built: $EntryJs" -ForegroundColor Green
 
+# Absolute paths for this machine (repo can live anywhere)
+$EntryJsAbs = [System.IO.Path]::GetFullPath($EntryJs)
+$NodeExeAbs = [System.IO.Path]::GetFullPath($NodeExe)
 # Normalize path for JSON (forward slashes work best in Cursor configs)
-$EntryJsJson = ($EntryJs -replace '\\', '/')
+$EntryJsJson = ($EntryJsAbs -replace '\\', '/')
+$NodeExeJson = ($NodeExeAbs -replace '\\', '/')
 
 if (-not $SkipCursorConfig) {
   Write-Step "Configuring Cursor MCP ($CursorMcpPath)"
@@ -93,7 +99,7 @@ if (-not $SkipCursorConfig) {
   }
 
   $config.mcpServers["widebrowse"] = @{
-    command = "node"
+    command = $NodeExeJson
     args    = @($EntryJsJson)
   }
 
@@ -117,6 +123,8 @@ if (-not $SkipCursorConfig) {
   $json = $out | ConvertTo-Json -Depth 8
   Set-Content -Path $CursorMcpPath -Value $json -Encoding UTF8
   Write-Host "Registered mcpServers.widebrowse in $CursorMcpPath" -ForegroundColor Green
+  Write-Host "  command: $NodeExeJson"
+  Write-Host "  args[0]: $EntryJsJson"
 }
 else {
   Write-Host "Skipped Cursor MCP config (-SkipCursorConfig)."

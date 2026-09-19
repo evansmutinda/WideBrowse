@@ -2,6 +2,7 @@
 
 const DEFAULT_PORT = 17321;
 const RECONNECT_MS = 2000;
+const RECONNECT_MAX_MS = 15000;
 const SESSION_TIMEOUT_MS = 120000;
 
 /** @type {WebSocket | null} */
@@ -17,6 +18,7 @@ let pendingDecision = null;
 /** @type {Map<string, { resolve: Function, reject: Function, timer: ReturnType<typeof setTimeout> }>} */
 const pendingRequests = new Map();
 let reconnectTimer = null;
+let reconnectAttempt = 0;
 let port = DEFAULT_PORT;
 /** When false, do not auto-reconnect after user clicks Disconnect */
 let autoReconnect = true;
@@ -148,6 +150,7 @@ function connect() {
   }
 
   socket.addEventListener("open", () => {
+    reconnectAttempt = 0;
     setConnected(true);
     sendRaw({ type: "hello", role: "extension", protocolVersion: 1 });
     emitEvent("extension.ready", { sessionState });
@@ -170,16 +173,19 @@ function connect() {
   });
 
   socket.addEventListener("error", () => {
-    // close handler will reconnect
+    // Expected when MCP/hub is not running yet — close handler reconnects.
+    // Avoid throwing; Chrome still logs net::ERR_CONNECTION_REFUSED once per attempt.
   });
 }
 
 function scheduleReconnect() {
   if (!autoReconnect) return;
   clearTimeout(reconnectTimer);
+  reconnectAttempt += 1;
+  const delay = Math.min(RECONNECT_MS * Math.pow(1.5, reconnectAttempt - 1), RECONNECT_MAX_MS);
   reconnectTimer = setTimeout(() => {
     if (autoReconnect) connect();
-  }, RECONNECT_MS);
+  }, delay);
 }
 
 async function onDisconnect() {

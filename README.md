@@ -16,16 +16,18 @@ Cursor agent  --stdio-->  WideBrowse MCP  --ws-->  Extension  -->  your tabs
 
 ## Setup
 
+Clone or copy this repo anywhere on the machine. Paths below are relative to the repo root — no fixed drive or folder is required.
+
 ### Quick install (Windows)
 
-Double-click [`install.cmd`](install.cmd), or from PowerShell:
+From the repo root, double-click [`install.cmd`](install.cmd), or in PowerShell:
 
 ```powershell
-cd d:\Cursor\WideBrowse
+cd path\to\WideBrowse
 .\install.ps1
 ```
 
-This builds the MCP server and registers `widebrowse` in `%USERPROFILE%\.cursor\mcp.json`.  
+This builds the MCP server and registers `widebrowse` in `%USERPROFILE%\.cursor\mcp.json` using **absolute paths derived from this repo’s location** (and the `node` executable on PATH).  
 Use `.\install.ps1 -SkipCursorConfig` to build only.  
 Use `.\install.ps1 -OpenExtensionPages` to also try opening the browser extensions pages.
 
@@ -36,14 +38,14 @@ Then load the unpacked extension (step 2 below) and reload MCP / restart Cursor.
 #### 1. Install and build the MCP server
 
 ```powershell
-cd d:\Cursor\WideBrowse\mcp-server
+cd path\to\WideBrowse\mcp-server
 npm install
 npm run build
 ```
 
 #### 2. Load the extension
 
-**Chrome:** `chrome://extensions` → enable **Developer mode** → **Load unpacked** → select `d:\Cursor\WideBrowse\extension`
+**Chrome:** `chrome://extensions` → enable **Developer mode** → **Load unpacked** → select the repo’s `extension` folder
 
 **Edge:** `edge://extensions` → same steps.
 
@@ -51,18 +53,20 @@ The extension reconnects automatically to `ws://127.0.0.1:17321/widebrowse`. Use
 
 #### 3. Add MCP to Cursor
 
-In Cursor MCP settings (or `%USERPROFILE%\.cursor\mcp.json`), add:
+Prefer `.\install.ps1` so paths match this machine. Or edit `%USERPROFILE%\.cursor\mcp.json` with the absolute path to this clone:
 
 ```json
 {
   "mcpServers": {
     "widebrowse": {
       "command": "node",
-      "args": ["d:/Cursor/WideBrowse/mcp-server/dist/index.js"]
+      "args": ["C:/absolute/path/to/WideBrowse/mcp-server/dist/index.js"]
     }
   }
 }
 ```
+
+On Windows, if Cursor cannot find `node`, set `command` to the full path of `node.exe` (e.g. from `where.exe node`).
 
 Optional: set `WIDEBROWSE_PORT` if you need a different bridge port (must match the extension popup).
 
@@ -96,6 +100,8 @@ When access is requested, WideBrowse **focuses that tab**, draws attention to th
 ## Notes
 
 - Bridge accepts **localhost only**.
+- If port `17321` is already a WideBrowse hub (another Cursor window / `hub-only`), this process **joins as a peer**. If that hub dies, the peer **self-heals** (rejoins or takes over the port).
+- If the port is busy with a **non-WideBrowse** process, startup **waits and logs** (default 60s, override with `WIDEBROWSE_PORT_WAIT_MS`) or set `WIDEBROWSE_PORT`.
 - Restricted pages (`chrome://`, Web Store, etc.) cannot run content scripts — pick a normal http(s) tab.
 - v1 does not deep-automate cross-origin iframes, file uploads, or Firefox.
 
