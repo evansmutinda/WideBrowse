@@ -105,6 +105,15 @@ When access is requested, WideBrowse **focuses that tab**, draws attention to th
 - Restricted pages (`chrome://`, Web Store, etc.) cannot run content scripts — pick a normal http(s) tab.
 - v1 does not deep-automate cross-origin iframes, file uploads, or Firefox.
 
+## Versioning
+
+Both parts follow [SemVer](https://semver.org) (`MAJOR.MINOR.PATCH`) and are versioned independently:
+
+- **Extension** — `extension/manifest.json` `version` (Chrome allows only dot-separated integers, no `-beta` suffixes)
+- **MCP server** — `mcp-server/package.json` `version` (keep `mcp-server/src/index.ts` `version:` in sync)
+
+Bump **MAJOR** for breaking changes (e.g. wire-protocol changes that break extension↔server compatibility), **MINOR** for backwards-compatible features, **PATCH** for fixes and cosmetic tweaks.
+
 ## Develop
 
 ```powershell
