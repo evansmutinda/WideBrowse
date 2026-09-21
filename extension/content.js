@@ -79,28 +79,26 @@ function ensureStyle() {
       pointer-events: none;
       box-sizing: border-box;
       background: transparent;
-      border: 6px solid rgba(8, 48, 44, 0.55);
+      border: none;
       box-shadow:
-        inset 0 0 0 1px rgba(6, 36, 32, 0.40),
-        inset 0 0 32px rgba(6, 36, 32, 0.55),
-        inset 0 0 64px rgba(6, 36, 32, 0.35);
+        inset 0 0 36px rgba(56, 189, 248, 0.61),
+        inset 0 0 80px rgba(56, 189, 248, 0.36),
+        inset 0 0 140px rgba(56, 189, 248, 0.18);
       border-radius: 0;
       animation: widebrowse-hue-pulse 2.8s ease-in-out infinite;
     }
     @keyframes widebrowse-hue-pulse {
       0%, 100% {
-        border-color: rgba(8, 48, 44, 0.48);
         box-shadow:
-          inset 0 0 0 1px rgba(6, 36, 32, 0.35),
-          inset 0 0 28px rgba(6, 36, 32, 0.48),
-          inset 0 0 56px rgba(6, 36, 32, 0.30);
+          inset 0 0 30px rgba(56, 189, 248, 0.50),
+          inset 0 0 68px rgba(56, 189, 248, 0.30),
+          inset 0 0 120px rgba(56, 189, 248, 0.14);
       }
       50% {
-        border-color: rgba(8, 48, 44, 0.62);
         box-shadow:
-          inset 0 0 0 1px rgba(6, 36, 32, 0.45),
-          inset 0 0 40px rgba(6, 36, 32, 0.62),
-          inset 0 0 72px rgba(6, 36, 32, 0.40);
+          inset 0 0 46px rgba(56, 189, 248, 0.68),
+          inset 0 0 96px rgba(56, 189, 248, 0.42),
+          inset 0 0 160px rgba(56, 189, 248, 0.21);
       }
     }
     #${BLOCK_ID} {
